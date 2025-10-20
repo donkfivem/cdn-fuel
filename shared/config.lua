@@ -51,14 +51,14 @@ Config.EmergencyServicesDiscount = {
 }
 Config.Core = 'qb-core' -- Change this to your core resources (Ex: 'qbx-core' | 'qb-core'), must be qb based!
 Config.Ox = {
-    Inventory = false, -- Uses OX_Inventory's metadata instead of QB-Inventory's.
-    Menu = false, -- Uses OX Libraries instead of qb-menu.
-    Input = false, -- Uses Ox Input Dialog instead of qb-input.
-    DrawText = false, -- Uses Ox DrawText instead of qb-core DrawText.
-    Progress = false -- Uses Ox ProgressBar instead of progressbar.
+    Inventory = true, -- Uses OX_Inventory's metadata instead of QB-Inventory's.
+    Menu = true, -- Uses OX Libraries instead of qb-menu.
+    Input = true, -- Uses Ox Input Dialog instead of qb-input.
+    DrawText = true, -- Uses Ox DrawText instead of qb-core DrawText.
+    Progress = true -- Uses Ox ProgressBar instead of progressbar.
 }
-Config.TargetResource = "qb-target" -- Supported: { 'qb-target', 'ox_target'} -- Others must use the same format as QB-Target or manual configuration is required.
-Config.PumpHose = false -- If true, it creates a hose from the pump to the nozzle the client is holding, to give it a more realistic feel.
+Config.TargetResource = "ox_target" -- Supported: { 'qb-target', 'ox_target'} -- Others must use the same format as QB-Target or manual configuration is required.
+Config.PumpHose = true -- If true, it creates a hose from the pump to the nozzle the client is holding, to give it a more realistic feel.
 Config.RopeType = { -- Options: 1-2-3-4-5; 1: Khaki Color, Kind of Thick, 2: Very Thick Khaki Rope, 3: Very Thick Black Rope, 4: Very Thin Black Rope, 5: Same as 3
     ['fuel'] = 1,
     ['electric'] = 1,
@@ -84,13 +84,14 @@ Config.UseSyphoning = false -- Follow the Syphoning Install Guide to enable this
 Config.SyphonDebug = false -- Used for Debugging the syphon portion!
 Config.SyphonKitCap = 50 -- Maximum amount (in L) the syphon kit can fit!
 Config.SyphonPoliceCallChance = 25 -- Math.Random(1, 100) Default: 25%
-Config.SyphonDispatchSystem = "ps-dispatch" -- Options: "ps-dispatch", "qb-dispatch", "qb-default" (just blips) or "custom" (Custom: you must configure yourself!)
+Config.SyphonDispatchSystem = "custom" -- Options: "ps-dispatch", "qb-dispatch", "qb-default" (just blips) or "custom" (Custom: you must configure yourself!)
 
 --- Jerry Can -----
 Config.UseJerryCan = true -- Enable the Jerry Can functionality. Will only work if properly installed.
-Config.JerryCanCap = 50 -- Maximum amount (in L) the jerrycan can fit! (Default: 50L)
-Config.JerryCanPrice = 200 -- The price of a jerry can, not including tax.
-Config.JerryCanGas = 25 -- The amount of Gas that the Jerry Can you purchase comes with. This should not be bigger that your Config.JerryCanCap!
+Config.JerryCanCap = 100 -- Maximum amount (in L) the jerrycan can fit! (Default: 100L) - Matches ox_fuel durability system
+Config.JerryCanPrice = 1000 -- The price of a jerry can, not including tax. (Matches ox_fuel: 1000)
+Config.JerryCanRefillPrice = 800 -- The price to refill an existing jerry can. (Matches ox_fuel: 800)
+Config.JerryCanGas = 100 -- The amount of Gas that the Jerry Can you purchase comes with. This should not be bigger that your Config.JerryCanCap!
 
 -- Animations --
 Config.StealAnimDict = 'anim@amb@clubhouse@tutorial@bkr_tut_ig3@'-- Used for Syphoning
@@ -101,21 +102,21 @@ Config.RefuelAnimation = "gar_ig_5_filling_can" -- This is for refueling and cha
 Config.RefuelAnimationDictionary = "timetable@gardener@filling_can" -- This is for refueling and charging.
 
 --- Player Owned Gas (Gasoline) Ergonomic Refueling Stations (Poggers) ---
-Config.PlayerOwnedGasStationsEnabled = true -- When true, peds will be located at all gas stations, and players will be able to talk with peds & purchase gas stations, having to manage fuel supplies.
+Config.PlayerOwnedGasStationsEnabled = false -- When true, peds will be located at all gas stations, and players will be able to talk with peds & purchase gas stations, having to manage fuel supplies.
 Config.StationFuelSalePercentage = 0.65 -- % of sales that the station gets. If they sell 4 Liters of Gas for $16 (not including taxes), they will get 16*Config.StationFuelSalePercentage back from the sale. Treat this as tax, also, it balances the profit margins a bit.
 Config.EmergencyShutOff = false -- When true, players can walk up to the ped and shut off the pumps at a gas station. While false, this option is disabled, because it can obviously be an issue. 
-Config.UnlimitedFuel = false -- When true, the fuel stations will not require refuelling by gas station owners, this is for the early stages of implementation.
+Config.UnlimitedFuel = true -- When true, the fuel stations will not require refuelling by gas station owners, this is for the early stages of implementation.
 Config.MaxFuelReserves = 100000 -- This is the maximum amount that the fuel station's reserves can hold.
 Config.FuelReservesPrice = 2.0 -- This is the price of fuel reserves for gas station owners.
 Config.GasStationSellPercentage = 50 -- This is the percentage that players will get of the gas stations price, when they sell a location!
 Config.MinimumFuelPrice = 2 -- This is the minimum value you want to let players set their fuel prices to.
 Config.MaxFuelPrice = 8 -- This is the maximum value you want to let players set their fuel prices to.
-Config.PlayerControlledFuelPrices = true -- This gives you the option to disable people being able to control fuel prices. When true, players can control the fuel prices via to management menu for the location.
-Config.GasStationNameChanges = true -- This gives you the option to disable people being able to change the name of their gas station, only recommended if it becomes a problem.
+Config.PlayerControlledFuelPrices = false -- This gives you the option to disable people being able to control fuel prices. When true, players can control the fuel prices via to management menu for the location.
+Config.GasStationNameChanges = false -- This gives you the option to disable people being able to change the name of their gas station, only recommended if it becomes a problem.
 Config.NameChangeMinChar = 10 -- This is the minimum length that a Gas Station's name must be.
 Config.NameChangeMaxChar = 25 -- This is the maximum length that a Gas Station's name must be.
 Config.WaitTime = 400 -- This is the wait time after callbacks, if you are having issues with menus not popping up, or being greyed out, up this to around ~300, it is not recommended to go over ~750, as menus will get slower and more unresponsive the higher you go. (Fixes this issue: https://www.shorturl.at/eqS19)
-Config.OneStationPerPerson = true -- This prevents players that already own one station from buying another, to prevent monopolies over Gas Stations.
+Config.OneStationPerPerson = false -- This prevents players that already own one station from buying another, to prevent monopolies over Gas Stations.
 
 --- Electric Vehicles
 Config.ElectricVehicleCharging = true -- When true, electric vehicles will actually consume resources and decrease 'Fuel / Battery' while driving. This means players will have to recharge their vehicle!
@@ -226,523 +227,523 @@ Config.FuelUsage = { -- The left part is at percentage RPM, and the right is how
 Config.AirAndWaterVehicleFueling = {
     ['enabled'] = true,
     ['locations'] = {
-        -- MRPD Helipad
-        [1] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(439.96, -973.0),
-                    vector2(458.09, -973.04),
-                    vector2(458.26, -989.47),
-                    vector2(439.58, -989.94),
-                },
-                ['minmax'] = {
-                    ['min'] = 40,
-                    ['max'] = 50.0
-                },
-            },
-            ['draw_text'] = "[G] Refuel Helicopter",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = true,
-                ['on_duty_only'] = true,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(442.08, -977.15, 42.69, 269.52),
-            }
-        },
-        -- Pillbox Hospital
-        [2] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(340.46, -580.02),
-                    vector2(351.11, -575.06),
-                    vector2(360.2, -578.35),
-                    vector2(364.99, -588.36),
-                    vector2(361.57, -597.44),
-                    vector2(351.71, -601.99),
-                    vector2(342.19, -598.38), 
-                    vector2(337.23, -587.49),
-                },
-                ['minmax'] = {
-                    ['min'] = 72.50,
-                    ['max'] = 78.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Helicopter",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = true,
-                ['on_duty_only'] = true,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(362.65, -592.64, 73.16, 71.26),
-            }
-        },
-        -- Cental Los Santos Medical Center
-        [3] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(287.81, -1454.52),
-                    vector2(298.6, -1441.48),
-                    vector2(325.74, -1464.21),
-                    vector2(314.95, -1477.29),
-                },
-                ['minmax'] = {
-                    ['min'] = 43.00,
-                    ['max'] = 50.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Helicopter",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = true,
-                ['on_duty_only'] = true,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(301.12, -1465.61, 45.51, 321.3),
-            }
-        },
-        -- Devin Weston Terminal
-        [4] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-944.57, -2963.51),
-                    vector2(-954.6, -2981.75),
-                    vector2(-929.13, -2996.81),
-                    vector2(-918.35, -2978.74),
-                },
-                ['minmax'] = {
-                    ['min'] = 11.00,
-                    ['max'] = 19.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Aircraft",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-923.12, -2976.81, 12.95, 149.55),
-            }
-        }, 
-        -- Back Right Terminal
-        [5] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-1658.47, -3109.69),
-                    vector2(-1645.78, -3085.85),
-                    vector2(-1664.28, -3074.94),
-                    vector2(-1677.93, -3098.61),
-                },
-                ['minmax'] = {
-                    ['min'] = 12.00,
-                    ['max'] = 19.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Aircraft",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-1665.44, -3104.53, 12.94, 329.89),
-            }
-        },
-        -- La Puerta Helicopter Pad #1
-        [6] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-701.34, -1441.48),
-                    vector2(-728.05, -1473.15),
-                    vector2(-712.1, -1486.4),
-                    vector2(-685.58, -1454.86),
-                },
-                ['minmax'] = {
-                    ['min'] = 4.00,
-                    ['max'] = 10.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Aircraft",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-706.13, -1464.14, 4.04, 320.0),
-            }
-        },  
-        -- La Puerta Helicopter Pad #2
-        [7] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-777.17, -1446.61),
-                    vector2(-761.78, -1459.59),
-                    vector2(-739.92, -1433.25),
-                    vector2(-755.4, -1420.29),
-                },
-                ['minmax'] = {
-                    ['min'] = 4.00,
-                    ['max'] = 10.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Aircraft",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-764.81, -1434.32, 4.06, 320.0),
-            }
-        },  
-        -- La Puerta Boat Dock #1
-        [8] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-793.1, -1482.94),
-                    vector2(-786.39, -1500.85),
-                    vector2(-809.39, -1508.94),
-                    vector2(-817.48, -1491.62),
-                },
-                ['minmax'] = {
-                    ['min'] = -5.00,
-                    ['max'] = 8.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Watercraft",
-            ['type'] = 'water',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-805.9, -1496.68, 0.6, 200.00),
-            }
-        },  
-        -- Fort Zancudo Military Base Hangar
-        [9] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-2145.24, 3291.63),
-                    vector2(-2127.94, 3281.7),
-                    vector2(-2139.37, 3260.35),
-                    vector2(-2157.69, 3271.1),
-                },
-                ['minmax'] = {
-                    ['min'] = 30.00,
-                    ['max'] = 37.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Aircraft",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = true,
-                ['on_duty_only'] = true,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-2148.8, 3283.99, 31.81, 240.0),
-            }
-        },  
-        -- Paleto Bay Police Department
-        [10] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-497.03, 5987.98),
-                    vector2(-476.48, 6008.6),
-                    vector2(-454.99, 5986.53),
-                    vector2(-475.77, 5966.83),
-                },
-                ['minmax'] = {
-                    ['min'] = 30.00,
-                    ['max'] = 37.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Aircraft",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = true,
-                ['on_duty_only'] = true,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-486.22, 5977.65, 30.3, 315.4),
-            }
-        },  
-        -- Grapeseed Airfield
-        [11] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(2094.41, 4771.26),
-                    vector2(2080.85, 4797.71),
-                    vector2(2104.56, 4811.8),
-                    vector2(2118.06, 4782.09),
-                },
-                ['minmax'] = {
-                    ['min'] = 40.00,
-                    ['max'] = 47.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Aircraft",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(2101.82, 4776.8, 40.02, 21.41),
-            }
-        },  
-        -- Grapeseed Airfield
-        [12] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(1347.76, 4277.37),
-                    vector2(1330.47, 4279.02),
-                    vector2(1328.53, 4261.64),
-                    vector2(1346.13, 4260.88),
-                },
-                ['minmax'] = {
-                    ['min'] = 28.00,
-                    ['max'] = 37.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Watercraft",
-            ['type'] = 'water',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(1338.13, 4269.62, 30.5, 85.00),
-            }
-        },  
-        -- Bob Smith PD
-        [13] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-1083.85, -837.07),
-                    vector2(-1100.36, -849.84),
-                    vector2(-1108.85, -839.11),
-                    vector2(-1107.04, -837.76),
-                    vector2(-1109.65, -834.04),
-                    vector2(-1104.1, -829.69),
-                    vector2(-1104.29, -829.07),
-                    vector2(-1095.62, -822.42),
-                },
-                ['minmax'] = {
-                    ['min'] = 36.00,
-                    ['max'] = 42.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Helicopter",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = true,
-                ['on_duty_only'] = true,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-1089.72, -830.6, 36.68, 129.00),
-            }
-        },  
-        -- Merryweather Helipad
-        [14] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(488.84, -3383.66),
-                    vector2(489.23, -3356.98),
-                    vector2(467.46, -3356.83),
-                    vector2(467.58, -3383.62),
-                    vector2(472.59, -3383.59),
-                    vector2(472.63, -3382.13),
-                    vector2(476.67, -3382.11),
-                    vector2(476.8, -3383.94),
-                },
-                ['minmax'] = {
-                    ['min'] = 4.50,
-                    ['max'] = 10.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Helicopter",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(483.28, -3382.83, 5.07, 0.0),
-            }
-        },
-        -- Airport Helipad #1 & #2
-        [15] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-1133.49, -2860.32),
-                    vector2(-1143.33, -2877.61),
-                    vector2(-1191.03, -2850.14),
-                    vector2(-1180.98, -2832.84),
-                },
-                ['minmax'] = {
-                    ['min'] = 12.50,
-                    ['max'] = 18.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Helicopter",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-1158.29, -2848.67, 12.95, 240.0),
-            }
-        },
-        -- Airport Helipad #3
-        [16] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(-1124.63, -2865.31),
-                    vector2(-1134.74, -2882.56),
-                    vector2(-1108.76, -2897.71),
-                    vector2(-1099.04, -2880.39),
-                },
-                ['minmax'] = {
-                    ['min'] = 12.50,
-                    ['max'] = 18.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Helicopter",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(-1125.15, -2866.97, 12.95, 240.0),
-            }
-        },
-        -- Sandy Shores Helipad
-        [17] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(1764.15, 3226.34),
-                    vector2(1758.66, 3246.44),
-                    vector2(1777.28, 3250.51),
-                    vector2(1781.89, 3230.8),
-                },
-                ['minmax'] = {
-                    ['min'] = 40.50,
-                    ['max'] = 47.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Helicopter",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(1771.81, 3229.24, 41.51, 15.00),
-            }
-        },
-        -- Sandy Shores Hangar
-        [18] = {
-            ['PolyZone'] = {
-                ['coords'] = {
-                    vector2(1755.37, 3301.3),
-                    vector2(1764.9, 3294.63),
-                    vector2(1769.42, 3277.19),
-                    vector2(1728.83, 3266.58),
-                    vector2(1721.75, 3291.6),
-                },
-                ['minmax'] = {
-                    ['min'] = 40.00,
-                    ['max'] = 47.50
-                },
-            },
-            ['draw_text'] = "[G] Refuel Aircraft",
-            ['type'] = 'air',
-            ['whitelist'] = {
-                ['enabled'] = false,
-                ['on_duty_only'] = false,
-                ['whitelisted_jobs'] = {
-                    'police', 'ambulance'
-                },
-            },
-            ['prop'] = {
-                ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(1748.31, 3297.08, 40.16, 15.0),
-            }
-        },
+        -- -- MRPD Helipad
+        -- [1] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(439.96, -973.0),
+        --             vector2(458.09, -973.04),
+        --             vector2(458.26, -989.47),
+        --             vector2(439.58, -989.94),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 40,
+        --             ['max'] = 50.0
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Helicopter",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = true,
+        --         ['on_duty_only'] = true,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(442.08, -977.15, 42.69, 269.52),
+        --     }
+        -- },
+        -- -- Pillbox Hospital
+        -- [2] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(340.46, -580.02),
+        --             vector2(351.11, -575.06),
+        --             vector2(360.2, -578.35),
+        --             vector2(364.99, -588.36),
+        --             vector2(361.57, -597.44),
+        --             vector2(351.71, -601.99),
+        --             vector2(342.19, -598.38), 
+        --             vector2(337.23, -587.49),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 72.50,
+        --             ['max'] = 78.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Helicopter",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = true,
+        --         ['on_duty_only'] = true,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(362.65, -592.64, 73.16, 71.26),
+        --     }
+        -- },
+        -- -- Cental Los Santos Medical Center
+        -- [3] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(287.81, -1454.52),
+        --             vector2(298.6, -1441.48),
+        --             vector2(325.74, -1464.21),
+        --             vector2(314.95, -1477.29),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 43.00,
+        --             ['max'] = 50.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Helicopter",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = true,
+        --         ['on_duty_only'] = true,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(301.12, -1465.61, 45.51, 321.3),
+        --     }
+        -- },
+        -- -- Devin Weston Terminal
+        -- [4] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-944.57, -2963.51),
+        --             vector2(-954.6, -2981.75),
+        --             vector2(-929.13, -2996.81),
+        --             vector2(-918.35, -2978.74),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 11.00,
+        --             ['max'] = 19.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Aircraft",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-923.12, -2976.81, 12.95, 149.55),
+        --     }
+        -- }, 
+        -- -- Back Right Terminal
+        -- [5] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-1658.47, -3109.69),
+        --             vector2(-1645.78, -3085.85),
+        --             vector2(-1664.28, -3074.94),
+        --             vector2(-1677.93, -3098.61),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 12.00,
+        --             ['max'] = 19.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Aircraft",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-1665.44, -3104.53, 12.94, 329.89),
+        --     }
+        -- },
+        -- -- La Puerta Helicopter Pad #1
+        -- [6] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-701.34, -1441.48),
+        --             vector2(-728.05, -1473.15),
+        --             vector2(-712.1, -1486.4),
+        --             vector2(-685.58, -1454.86),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 4.00,
+        --             ['max'] = 10.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Aircraft",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-706.13, -1464.14, 4.04, 320.0),
+        --     }
+        -- },  
+        -- -- La Puerta Helicopter Pad #2
+        -- [7] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-777.17, -1446.61),
+        --             vector2(-761.78, -1459.59),
+        --             vector2(-739.92, -1433.25),
+        --             vector2(-755.4, -1420.29),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 4.00,
+        --             ['max'] = 10.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Aircraft",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-764.81, -1434.32, 4.06, 320.0),
+        --     }
+        -- },  
+        -- -- La Puerta Boat Dock #1
+        -- [8] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-793.1, -1482.94),
+        --             vector2(-786.39, -1500.85),
+        --             vector2(-809.39, -1508.94),
+        --             vector2(-817.48, -1491.62),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = -5.00,
+        --             ['max'] = 8.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Watercraft",
+        --     ['type'] = 'water',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-805.9, -1496.68, 0.6, 200.00),
+        --     }
+        -- },  
+        -- -- Fort Zancudo Military Base Hangar
+        -- [9] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-2145.24, 3291.63),
+        --             vector2(-2127.94, 3281.7),
+        --             vector2(-2139.37, 3260.35),
+        --             vector2(-2157.69, 3271.1),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 30.00,
+        --             ['max'] = 37.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Aircraft",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = true,
+        --         ['on_duty_only'] = true,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-2148.8, 3283.99, 31.81, 240.0),
+        --     }
+        -- },  
+        -- -- Paleto Bay Police Department
+        -- [10] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-497.03, 5987.98),
+        --             vector2(-476.48, 6008.6),
+        --             vector2(-454.99, 5986.53),
+        --             vector2(-475.77, 5966.83),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 30.00,
+        --             ['max'] = 37.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Aircraft",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = true,
+        --         ['on_duty_only'] = true,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-486.22, 5977.65, 30.3, 315.4),
+        --     }
+        -- },  
+        -- -- Grapeseed Airfield
+        -- [11] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(2094.41, 4771.26),
+        --             vector2(2080.85, 4797.71),
+        --             vector2(2104.56, 4811.8),
+        --             vector2(2118.06, 4782.09),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 40.00,
+        --             ['max'] = 47.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Aircraft",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(2101.82, 4776.8, 40.02, 21.41),
+        --     }
+        -- },  
+        -- -- Grapeseed Airfield
+        -- [12] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(1347.76, 4277.37),
+        --             vector2(1330.47, 4279.02),
+        --             vector2(1328.53, 4261.64),
+        --             vector2(1346.13, 4260.88),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 28.00,
+        --             ['max'] = 37.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Watercraft",
+        --     ['type'] = 'water',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(1338.13, 4269.62, 30.5, 85.00),
+        --     }
+        -- },  
+        -- -- Bob Smith PD
+        -- [13] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-1083.85, -837.07),
+        --             vector2(-1100.36, -849.84),
+        --             vector2(-1108.85, -839.11),
+        --             vector2(-1107.04, -837.76),
+        --             vector2(-1109.65, -834.04),
+        --             vector2(-1104.1, -829.69),
+        --             vector2(-1104.29, -829.07),
+        --             vector2(-1095.62, -822.42),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 36.00,
+        --             ['max'] = 42.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Helicopter",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = true,
+        --         ['on_duty_only'] = true,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-1089.72, -830.6, 36.68, 129.00),
+        --     }
+        -- },  
+        -- -- Merryweather Helipad
+        -- [14] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(488.84, -3383.66),
+        --             vector2(489.23, -3356.98),
+        --             vector2(467.46, -3356.83),
+        --             vector2(467.58, -3383.62),
+        --             vector2(472.59, -3383.59),
+        --             vector2(472.63, -3382.13),
+        --             vector2(476.67, -3382.11),
+        --             vector2(476.8, -3383.94),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 4.50,
+        --             ['max'] = 10.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Helicopter",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(483.28, -3382.83, 5.07, 0.0),
+        --     }
+        -- },
+        -- -- Airport Helipad #1 & #2
+        -- [15] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-1133.49, -2860.32),
+        --             vector2(-1143.33, -2877.61),
+        --             vector2(-1191.03, -2850.14),
+        --             vector2(-1180.98, -2832.84),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 12.50,
+        --             ['max'] = 18.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Helicopter",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-1158.29, -2848.67, 12.95, 240.0),
+        --     }
+        -- },
+        -- -- Airport Helipad #3
+        -- [16] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(-1124.63, -2865.31),
+        --             vector2(-1134.74, -2882.56),
+        --             vector2(-1108.76, -2897.71),
+        --             vector2(-1099.04, -2880.39),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 12.50,
+        --             ['max'] = 18.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Helicopter",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(-1125.15, -2866.97, 12.95, 240.0),
+        --     }
+        -- },
+        -- -- Sandy Shores Helipad
+        -- [17] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(1764.15, 3226.34),
+        --             vector2(1758.66, 3246.44),
+        --             vector2(1777.28, 3250.51),
+        --             vector2(1781.89, 3230.8),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 40.50,
+        --             ['max'] = 47.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Helicopter",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(1771.81, 3229.24, 41.51, 15.00),
+        --     }
+        -- },
+        -- -- Sandy Shores Hangar
+        -- [18] = {
+        --     ['PolyZone'] = {
+        --         ['coords'] = {
+        --             vector2(1755.37, 3301.3),
+        --             vector2(1764.9, 3294.63),
+        --             vector2(1769.42, 3277.19),
+        --             vector2(1728.83, 3266.58),
+        --             vector2(1721.75, 3291.6),
+        --         },
+        --         ['minmax'] = {
+        --             ['min'] = 40.00,
+        --             ['max'] = 47.50
+        --         },
+        --     },
+        --     ['draw_text'] = "[G] Refuel Aircraft",
+        --     ['type'] = 'air',
+        --     ['whitelist'] = {
+        --         ['enabled'] = false,
+        --         ['on_duty_only'] = false,
+        --         ['whitelisted_jobs'] = {
+        --             'police', 'ambulance'
+        --         },
+        --     },
+        --     ['prop'] = {
+        --         ['model'] = 'prop_gas_pump_1d',
+        --         ['coords'] = vector4(1748.31, 3297.08, 40.16, 15.0),
+        --     }
+        -- },
         -- La Mesa Landing Pad (Custom)
         -- Does not work in conjunction with Gabz Trooper PD.
         -- [19] = {

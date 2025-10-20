@@ -231,6 +231,14 @@ local Translations = {
     jerry_can_success = "Successfully filled the Jerry Can!",
     jerry_can_success_vehicle = "Successfully fueled the vehicle with the Jerry Can!",
     jerry_can_payment_label = "Purchased Jerry Can.",
+    jerry_can_refuel_success = "Jerry can refilled successfully!",
+    jerry_can_purchase_success = "Jerry can purchased successfully!",
+    jerry_can_cannot_carry = "You cannot carry a jerry can!",
+    prog_refilling_jerry_can = "Refilling Jerry Can..",
+    prog_buying_jerry_can = "Purchasing Jerry Can..",
+    petrolcan_not_equipped = "You don't have a jerry can equipped!",
+    petrolcan_not_enough_fuel = "Your jerry can is empty!",
+    tank_full = "The vehicle's tank is full!",
 
     -- Syphoning
     syphon_success = "Successfully syphoned from vehicle!",

@@ -93,37 +93,220 @@ RegisterNetEvent("cdn-fuel:server:PayForFuel", function(amount, purchasetype, Fu
 	Player.Functions.RemoveMoney(moneyremovetype, total, payString)
 end)
 
-RegisterNetEvent("cdn-fuel:server:purchase:jerrycan", function(purchasetype)
-	local src = source if not src then return end
-	local Player = QBCore.Functions.GetPlayer(src) if not Player then return end
-	local tax = GlobalTax(Config.JerryCanPrice) local total = math.ceil(Config.JerryCanPrice + tax)
-	local moneyremovetype = purchasetype
-	if purchasetype == "bank" then
-		moneyremovetype = "bank"
-	elseif purchasetype == "cash" then
-		moneyremovetype = "cash"
+-- Jerry Can Purchase/Refill Event (Matches ox_fuel:fuelCan logic)
+RegisterNetEvent("cdn-fuel:server:fuelCan", function(hasCan, price)
+	local src = source
+	if not src then return end
+	local Player = QBCore.Functions.GetPlayer(src)
+	if not Player then return end
+
+	if hasCan then
+		-- Refilling existing jerry can (matches ox_fuel refill logic)
+		local item = nil
+		if Config.Ox.Inventory then
+			item = exports.ox_inventory:GetCurrentWeapon(src)
+		end
+
+		if not item or item.name ~= 'WEAPON_PETROLCAN' then return end
+
+		-- Check payment - RemoveMoney returns true on success
+		local moneyType = 'cash'
+		local removed = Player.Functions.RemoveMoney(moneyType, price, "Jerry Can Refill")
+		if not removed then
+			TriggerClientEvent('QBCore:Notify', src, Lang:t("not_enough_money_in_cash"), 'error')
+			return
+		end
+
+		-- Refill the jerry can durability and ammo
+		if Config.Ox.Inventory then
+			item.metadata.durability = 100
+			item.metadata.ammo = 100
+			exports.ox_inventory:SetMetadata(src, item.slot, item.metadata)
+		end
+
+		TriggerClientEvent('QBCore:Notify', src, Lang:t("jerry_can_refuel_success"), 'success')
+	else
+		-- Purchasing new jerry can (matches ox_fuel buy logic)
+		print("^3[cdn-fuel] Jerry can purchase attempt - Player: "..src.." | Price: $"..price.."^7")
+
+		if Config.Ox.Inventory then
+			local canCarry = exports.ox_inventory:CanCarryItem(src, 'WEAPON_PETROLCAN', 1)
+			print("^3[cdn-fuel] CanCarry check: "..tostring(canCarry).."^7")
+			if not canCarry then
+				print("^1[cdn-fuel] Cannot carry jerry can!^7")
+				return TriggerClientEvent('QBCore:Notify', src, "Cannot carry jerry can", 'error')
+			end
+		end
+
+		-- Check payment - RemoveMoney returns true on success
+		local moneyType = 'cash'
+		local cashBefore = Player.PlayerData.money['cash']
+		print("^3[cdn-fuel] Cash before: $"..cashBefore.."^7")
+
+		local removed = Player.Functions.RemoveMoney(moneyType, price, "Jerry Can Purchase")
+		print("^3[cdn-fuel] RemoveMoney result: "..tostring(removed).."^7")
+
+		if not removed then
+			print("^1[cdn-fuel] Payment failed - not enough cash!^7")
+			TriggerClientEvent('QBCore:Notify', src, "Not enough cash! Need $"..price, 'error')
+			return
+		end
+
+		print("^2[cdn-fuel] Payment successful! Adding WEAPON_PETROLCAN...^7")
+
+		-- Give the weapon with full durability
+		if Config.Ox.Inventory then
+			local success = exports.ox_inventory:AddItem(src, 'WEAPON_PETROLCAN', 1, {
+				durability = 100,
+				ammo = 100,
+			})
+			print("^3[cdn-fuel] ox_inventory AddItem result: "..tostring(success).."^7")
+
+			if not success then
+				print("^1[cdn-fuel] FAILED to add item! Refunding money...^7")
+				Player.Functions.AddMoney(moneyType, price, "Jerry Can Refund")
+				TriggerClientEvent('QBCore:Notify', src, "Failed to add jerry can - refunded", 'error')
+				return
+			end
+		else
+			-- QB Inventory fallback
+			local success = Player.Functions.AddItem("WEAPON_PETROLCAN", 1, false, {
+				durability = 100,
+				ammo = 100
+			})
+			print("^3[cdn-fuel] QB Inventory AddItem result: "..tostring(success).."^7")
+
+			if success then
+				TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['WEAPON_PETROLCAN'], "add")
+			else
+				print("^1[cdn-fuel] FAILED to add item! Refunding money...^7")
+				Player.Functions.AddMoney(moneyType, price, "Jerry Can Refund")
+				TriggerClientEvent('QBCore:Notify', src, "Failed to add jerry can - refunded", 'error')
+				return
+			end
+		end
+
+		print("^2[cdn-fuel] Jerry can successfully added to inventory!^7")
+		TriggerClientEvent('QBCore:Notify', src, "Jerry can purchased for $"..price.."!", 'success')
 	end
+end)
+
+-- Legacy event for backwards compatibility (redirects to new system)
+RegisterNetEvent("cdn-fuel:server:purchase:jerrycan", function(purchasetype)
+	local src = source
+	print("^3[cdn-fuel] Legacy purchase event triggered - Player: "..src.."^7")
+
+	-- Call the new event handler directly, passing src as a parameter
+	local Player = QBCore.Functions.GetPlayer(src)
+	if not Player then
+		print("^1[cdn-fuel] Player not found!^7")
+		return
+	end
+
+	local hasCan = false
+	local price = Config.JerryCanPrice
+
+	print("^3[cdn-fuel] Jerry can purchase attempt - Player: "..src.." | Price: $"..price.."^7")
+
 	if Config.Ox.Inventory then
-		local info = {cdn_fuel = tostring(Config.JerryCanGas)}
-		exports.ox_inventory:AddItem(src, 'jerrycan', 1, info)
-		local hasItem = exports.ox_inventory:GetItem(src, 'jerrycan', info, 1)
-		if hasItem then
-			Player.Functions.RemoveMoney(moneyremovetype, total, Lang:t("jerry_can_payment_label"))
+		local canCarry = exports.ox_inventory:CanCarryItem(src, 'WEAPON_PETROLCAN', 1)
+		print("^3[cdn-fuel] CanCarry check: "..tostring(canCarry).."^7")
+		if not canCarry then
+			print("^1[cdn-fuel] Cannot carry jerry can!^7")
+			return TriggerClientEvent('QBCore:Notify', src, Lang:t("jerry_can_cannot_carry"), 'error')
+		end
+	end
+
+	-- Check payment - RemoveMoney returns true on success
+	local moneyType = 'cash'
+	local cashBefore = Player.PlayerData.money['cash']
+	print("^3[cdn-fuel] Cash before: $"..cashBefore.."^7")
+
+	local removed = Player.Functions.RemoveMoney(moneyType, price, "Jerry Can Purchase")
+	print("^3[cdn-fuel] RemoveMoney result: "..tostring(removed).."^7")
+
+	if not removed then
+		print("^1[cdn-fuel] Payment failed - not enough cash!^7")
+		TriggerClientEvent('QBCore:Notify', src, Lang:t("not_enough_money_in_cash"), 'error')
+		return
+	end
+
+	print("^2[cdn-fuel] Payment successful! Adding WEAPON_PETROLCAN...^7")
+
+	-- Give the weapon with full durability
+	if Config.Ox.Inventory then
+		local success = exports.ox_inventory:AddItem(src, 'WEAPON_PETROLCAN', 1, {
+			durability = 100,
+			ammo = 100,
+		})
+		print("^3[cdn-fuel] ox_inventory AddItem result: "..tostring(success).."^7")
+
+		if not success then
+			print("^1[cdn-fuel] FAILED to add item! Refunding money...^7")
+			Player.Functions.AddMoney(moneyType, price, "Jerry Can Refund")
+			TriggerClientEvent('QBCore:Notify', src, "Failed to add jerry can - refunded", 'error')
+			return
 		end
 	else
-		local info = {gasamount = Config.JerryCanGas}
-		if Player.Functions.AddItem("jerrycan", 1, false, info) then -- Dont remove money if AddItem() not possible!
-			TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['jerrycan'], "add")
-			Player.Functions.RemoveMoney(moneyremovetype, total, Lang:t("jerry_can_payment_label"))
+		-- QB Inventory fallback
+		local success = Player.Functions.AddItem("WEAPON_PETROLCAN", 1, false, {
+			durability = 100,
+			ammo = 100
+		})
+		print("^3[cdn-fuel] QB Inventory AddItem result: "..tostring(success).."^7")
+
+		if success then
+			TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['WEAPON_PETROLCAN'], "add")
+		else
+			print("^1[cdn-fuel] FAILED to add item! Refunding money...^7")
+			Player.Functions.AddMoney(moneyType, price, "Jerry Can Refund")
+			TriggerClientEvent('QBCore:Notify', src, "Failed to add jerry can - refunded", 'error')
+			return
+		end
+	end
+
+	print("^2[cdn-fuel] Jerry can successfully added to inventory!^7")
+	TriggerClientEvent('QBCore:Notify', src, Lang:t("jerry_can_purchase_success"), 'success')
+end)
+
+-- Update Jerry Can Durability (Matches ox_fuel:updateFuelCan logic)
+RegisterNetEvent('cdn-fuel:updateFuelCan', function(durability, netid, fuel)
+	local src = source
+	local item = nil
+
+	if Config.Ox.Inventory then
+		item = exports.ox_inventory:GetCurrentWeapon(src)
+	end
+
+	if item and durability > 0 then
+		durability = math.floor(item.metadata.durability - durability)
+		item.metadata.durability = durability
+		item.metadata.ammo = durability
+
+		if Config.Ox.Inventory then
+			exports.ox_inventory:SetMetadata(src, item.slot, item.metadata)
+		end
+
+		-- Update vehicle fuel
+		local vehicle = NetworkGetEntityFromNetworkId(netid)
+		if vehicle ~= 0 then
+			-- Set vehicle fuel using cdn-fuel's system
+			TriggerClientEvent('cdn-fuel:client:updateVehicleFuel', -1, netid, fuel)
 		end
 	end
 end)
 
---- Jerry Can
+--- Jerry Can (Keep old useable item for backwards compatibility, but it won't be needed with weapon system)
 if Config.UseJerryCan then
 	QBCore.Functions.CreateUseableItem("jerrycan", function(source, item)
 		local src = source
 		TriggerClientEvent('cdn-fuel:jerrycan:refuelmenu', src, item)
+	end)
+
+	-- Add WEAPON_PETROLCAN as useable (though weapons auto-equip, this ensures compatibility)
+	QBCore.Functions.CreateUseableItem("WEAPON_PETROLCAN", function(source, item)
+		-- Weapon jerry cans don't need manual triggering, they work when equipped
+		-- This is just for compatibility
 	end)
 end
 

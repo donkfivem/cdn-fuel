@@ -22,6 +22,30 @@ local PlayerInSpecialFuelZone = false
 local Rope = nil
 local CachedFuelPrice = nil
 
+-- Jerry Can State (Matches ox_fuel petrol can system)
+local petrolCanState = {
+	petrolCan = nil, -- Current equipped jerry can data
+	isFuelingWithCan = false, -- Is currently fueling with can
+}
+
+-- Track current weapon/jerry can (ox_fuel style)
+local function setPetrolCan(data)
+	if Config.Ox.Inventory then
+		petrolCanState.petrolCan = data and data.name == 'WEAPON_PETROLCAN' and data or nil
+	end
+end
+
+-- Initialize petrol can tracking
+if Config.Ox.Inventory then
+	CreateThread(function()
+		Wait(1000) -- Wait for inventory to load
+		setPetrolCan(exports.ox_inventory:getCurrentWeapon())
+	end)
+
+	-- Listen for weapon changes
+	AddEventHandler('ox_inventory:currentWeapon', setPetrolCan)
+end
+
 -- Debug ---
 if Config.FuelDebug then
 	RegisterCommand('setfuel', function(source, args)
@@ -1179,6 +1203,168 @@ RegisterNetEvent('cdn-fuel:client:RefuelVehicle', function(data)
 	end
 end)
 
+-------------------------------------------------------------
+-- NEW JERRY CAN SYSTEM (Matches ox_fuel petrol can exactly)
+-------------------------------------------------------------
+
+-- Buy or Refill Jerry Can at Pump (Matches ox_fuel's getPetrolCan function)
+function GetPetrolCan(coords, refuel)
+	local ped = PlayerPedId()
+	TaskTurnPedToFaceCoord(ped, coords.x, coords.y, coords.z, 5000)
+	Wait(500)
+
+	if Config.Ox.Progress then
+		if lib.progressCircle({
+			duration = 5000,
+			label = refuel and Lang:t("prog_refilling_jerry_can") or Lang:t("prog_buying_jerry_can"),
+			position = 'bottom',
+			useWhileDead = false,
+			canCancel = true,
+			disable = {
+				move = true,
+				car = true,
+				combat = true,
+			},
+			anim = {
+				dict = 'timetable@gardener@filling_can',
+				clip = 'gar_ig_5_filling_can',
+				flags = 49,
+			},
+		}) then
+			if refuel and Config.Ox.Inventory then
+				-- Check if player has jerry can equipped
+				local hasItem = exports.ox_inventory:GetItemCount('WEAPON_PETROLCAN')
+				if hasItem and hasItem > 0 then
+					return TriggerServerEvent('cdn-fuel:server:fuelCan', true, Config.JerryCanRefillPrice)
+				end
+			end
+
+			TriggerServerEvent('cdn-fuel:server:fuelCan', false, Config.JerryCanPrice)
+		end
+	else
+		QBCore.Functions.Progressbar('get_petrol_can', refuel and Lang:t("prog_refilling_jerry_can") or Lang:t("prog_buying_jerry_can"), 5000, false, true, {
+			disableMovement = true,
+			disableCarMovement = true,
+			disableMouse = false,
+			disableCombat = true,
+		}, {
+			animDict = 'timetable@gardener@filling_can',
+			anim = 'gar_ig_5_filling_can',
+			flags = 49,
+		}, {}, {}, function() -- Done
+			if refuel and Config.Ox.Inventory then
+				local hasItem = exports.ox_inventory:GetItemCount('WEAPON_PETROLCAN')
+				if hasItem and hasItem > 0 then
+					return TriggerServerEvent('cdn-fuel:server:fuelCan', true, Config.JerryCanRefillPrice)
+				end
+			end
+
+			TriggerServerEvent('cdn-fuel:server:fuelCan', false, Config.JerryCanPrice)
+		end, function() -- Cancel
+			ClearPedTasks(ped)
+		end)
+	end
+
+	ClearPedTasks(ped)
+end
+
+-- Start Fueling with Jerry Can (Matches ox_fuel's startFueling for jerry can)
+function StartFuelingWithCan(vehicle)
+	local ped = PlayerPedId()
+	local vehState = Entity(vehicle).state
+	local fuelAmount = GetFuel(vehicle) or 0
+	local duration = math.ceil((100 - fuelAmount) / Config.refillValue) * Config.refillTick
+	local durability = 0
+
+	if 100 - fuelAmount < Config.refillValue then
+		return QBCore.Functions.Notify(Lang:t("tank_already_full"), 'error')
+	end
+
+	if not petrolCanState.petrolCan then
+		return QBCore.Functions.Notify(Lang:t("petrolcan_not_equipped"), 'error')
+	elseif petrolCanState.petrolCan.metadata.ammo <= Config.durabilityTick then
+		return QBCore.Functions.Notify(Lang:t("petrolcan_not_enough_fuel"), 'error')
+	end
+
+	petrolCanState.isFuelingWithCan = true
+
+	TaskTurnPedToFaceEntity(ped, vehicle, duration)
+	Wait(500)
+
+	CreateThread(function()
+		if Config.Ox.Progress then
+			lib.progressCircle({
+				duration = duration,
+				label = Lang:t("prog_refueling_vehicle"),
+				position = 'bottom',
+				useWhileDead = false,
+				canCancel = true,
+				disable = {
+					move = true,
+					car = true,
+					combat = true,
+				},
+				anim = {
+					dict = 'weapon@w_sp_jerrycan',
+					clip = 'fire',
+				},
+			})
+		else
+			QBCore.Functions.Progressbar('refuel_vehicle', Lang:t("prog_refueling_vehicle"), duration, false, true, {
+				disableMovement = true,
+				disableCarMovement = true,
+				disableMouse = false,
+				disableCombat = true,
+			}, {
+				animDict = 'weapon@w_sp_jerrycan',
+				anim = 'fire',
+			}, {}, {}, function() end, function() end)
+		end
+
+		petrolCanState.isFuelingWithCan = false
+	end)
+
+	-- Continuous fueling loop (matches ox_fuel exactly)
+	while petrolCanState.isFuelingWithCan do
+		if petrolCanState.petrolCan then
+			durability = durability + Config.durabilityTick
+
+			if durability >= petrolCanState.petrolCan.metadata.ammo then
+				if Config.Ox.Progress then
+					lib.cancelProgress()
+				end
+				durability = petrolCanState.petrolCan.metadata.ammo
+				break
+			end
+		else
+			break
+		end
+
+		fuelAmount = fuelAmount + Config.refillValue
+
+		if fuelAmount >= 100 then
+			petrolCanState.isFuelingWithCan = false
+			fuelAmount = 100.0
+		end
+
+		Wait(Config.refillTick)
+	end
+
+	ClearPedTasks(ped)
+
+	-- Update fuel and jerry can durability
+	TriggerServerEvent('cdn-fuel:updateFuelCan', durability, NetworkGetNetworkIdFromEntity(vehicle), fuelAmount)
+end
+
+-- Config values for real-time fueling (FIXED for jerry can capacity)
+Config.refillValue = Config.refillValue or 0.50  -- Fuel refill value per tick (0.5% per tick)
+Config.refillTick = Config.refillTick or 250     -- Fuel tick time in ms
+Config.durabilityTick = Config.durabilityTick or 0.5  -- Durability loss per tick (0.5 per tick = 100 durability fills 100% fuel)
+
+-------------------------------------------------------------
+-- OLD JERRY CAN SYSTEM (Kept for backwards compatibility)
+-------------------------------------------------------------
+
 -- Jerry Can --
 RegisterNetEvent('cdn-fuel:jerrycan:refuelmenu', function(itemData)
 	if IsPedInAnyVehicle(PlayerPedId(), false) then QBCore.Functions.Notify(Lang:t("cannot_refuel_inside"), 'error') return end
@@ -1744,7 +1930,24 @@ local function PoliceAlert(coords)
 		elseif Config.SyphonDispatchSystem == "qb-default" then
 			TriggerServerEvent('cdn-syphoning:callcops', coords)
 		elseif Config.SyphonDispatchSystem == "custom" then
-			-- Put your own dispatch system here
+			TriggerClientEvent('cd_dispatch:AddNotification', -1, {
+				job_table = {'police', },
+				coords = coords,
+				title = '10-13 - Syphoning',
+				message = message,
+				flash = 0,
+				unique_id = tostring(math.random(0000000,9999999)),
+				sound = 1,
+				blip = {
+					sprite = 431,
+					scale = 1.2,
+					colour = 3,
+					flashes = false,
+					text = '911 - Syphoning',
+					time = 5,
+					radius = 0,
+				}
+			})
 		else
 			if Config.SyphonDebug then print("There was an attempt to call police but this dispatch system is not supported!") end
 		end
@@ -2617,6 +2820,28 @@ CreateThread(function()
 					end
 				end,
 				event = "cdn-fuel:client:electric:RefuelMenu",
+			},
+			[3] = {
+				name = 'cdn-fuel:options:3',
+				icon = "fas fa-gas-pump",
+				label = "Refuel with Jerry Can",
+				canInteract = function(entity)
+					-- Check if player has jerry can equipped
+					local hasPetrolCan = GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_PETROLCAN')
+					if hasPetrolCan and not refueling and not petrolCanState.isFuelingWithCan then
+						-- Check if jerry can has fuel (durability > 0)
+						if petrolCanState.petrolCan and petrolCanState.petrolCan.metadata then
+							local durability = petrolCanState.petrolCan.metadata.ammo or petrolCanState.petrolCan.metadata.durability or 0
+							-- Only show if jerry can has fuel AND vehicle isn't full
+							if durability > 0 then
+								local vehFuel = GetFuel(entity) or 0
+								return vehFuel < 99.0 -- Vehicle must not be full
+							end
+						end
+					end
+					return false
+				end,
+				event = "cdn-fuel:client:refuelWithJerryCan",
 			}
 		}
 
@@ -2631,6 +2856,10 @@ CreateThread(function()
 				icon = "fas fa-gas-pump",
 				label = Lang:t("grab_nozzle"),
 				canInteract = function()
+					-- Hide if player has petrol can equipped
+					local hasPetrolCan = GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_PETROLCAN')
+					if hasPetrolCan then return false end
+
 					if PlayerInSpecialFuelZone then return false end
 					if not IsPedInAnyVehicle(PlayerPedId()) and not holdingnozzle and not HoldingSpecialNozzle and inGasStation == true and not PlayerInSpecialFuelZone then
 						return true
@@ -2645,9 +2874,34 @@ CreateThread(function()
 				icon = "fas fa-fire-flame-simple",
 				label = Lang:t("buy_jerrycan"),
 				canInteract = function()
+					-- Hide if player has petrol can equipped
+					local hasPetrolCan = GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_PETROLCAN')
+					if hasPetrolCan then return false end
+
 					if not IsPedInAnyVehicle(PlayerPedId()) and not holdingnozzle and not HoldingSpecialNozzle and inGasStation == true then
 						return true
 					end
+					return false
+				end,
+			},
+			[6] = {
+				name = "cdn-fuel:modelOptions:option_6",
+				num = 6,
+				type = "client",
+				event = "cdn-fuel:client:refilljerrycan",
+				icon = "fas fa-fire-flame-simple",
+				label = "Refill Jerry Can ($"..Config.JerryCanRefillPrice..")",
+				canInteract = function()
+					-- ONLY show if player has petrol can equipped
+					local hasPetrolCan = GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_PETROLCAN')
+					if not hasPetrolCan then return false end
+
+					if not IsPedInAnyVehicle(PlayerPedId()) and not holdingnozzle and inGasStation == true and Config.Ox.Inventory then
+						-- Check if player has WEAPON_PETROLCAN equipped or in inventory
+						local hasItem = exports.ox_inventory:GetItemCount('WEAPON_PETROLCAN')
+						return hasItem and hasItem > 0
+					end
+					return false
 				end,
 			},
 			[3] = {
@@ -2658,6 +2912,10 @@ CreateThread(function()
 				icon = "fas fa-hand",
 				label = Lang:t("return_nozzle"),
 				canInteract = function()
+					-- Hide if player has petrol can equipped
+					local hasPetrolCan = GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_PETROLCAN')
+					if hasPetrolCan then return false end
+
 					if holdingnozzle and not refueling then
 						return true
 					end
@@ -2671,6 +2929,10 @@ CreateThread(function()
 				icon = "fas fa-gas-pump",
 				label = Lang:t("grab_special_nozzle"),
 				canInteract = function()
+					-- Hide if player has petrol can equipped
+					local hasPetrolCan = GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_PETROLCAN')
+					if hasPetrolCan then return false end
+
 					if Config.FuelDebug then print("Is Player In Special Fuel Zone?: "..tostring(PlayerInSpecialFuelZone)) end
 					if not HoldingSpecialNozzle and not IsPedInAnyVehicle(PlayerPedId()) and PlayerInSpecialFuelZone then
 						return true
@@ -2685,6 +2947,10 @@ CreateThread(function()
 				icon = "fas fa-hand",
 				label = Lang:t("return_special_nozzle"),
 				canInteract = function()
+					-- Hide if player has petrol can equipped
+					local hasPetrolCan = GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_PETROLCAN')
+					if hasPetrolCan then return false end
+
 					if HoldingSpecialNozzle and not IsPedInAnyVehicle(PlayerPedId()) then
 						return true
 					end
@@ -2886,3 +3152,203 @@ CreateThread(function()
 		end
 	end
 end)
+
+-------------------------------------------------------------
+-- NEW JERRY CAN EVENTS AND COMMANDS (ox_fuel style)
+-------------------------------------------------------------
+
+-- Event to handle refilling jerry can at pump
+RegisterNetEvent('cdn-fuel:client:refilljerrycan', function()
+	local ped = PlayerPedId()
+	local coords = GetEntityCoords(ped)
+	local pumpCoords, pump = GetClosestPump(coords, false)
+
+	if pump and pump ~= 0 and pumpCoords and #(coords - pumpCoords) < 3.0 then
+		GetPetrolCan(pumpCoords, true)
+	else
+		QBCore.Functions.Notify("You're not near a pump!", 'error')
+	end
+end)
+
+-- Event to handle refueling vehicle with jerry can (ox_target)
+RegisterNetEvent('cdn-fuel:client:refuelWithJerryCan', function(data)
+	local vehicle = data.entity
+	if not vehicle or not DoesEntityExist(vehicle) then
+		QBCore.Functions.Notify("Vehicle not found!", 'error')
+		return
+	end
+
+	-- Get current fuel and jerry can info
+	local vehFuel = math.floor(GetFuel(vehicle))
+	local maxRefuel = 100 - vehFuel
+
+	if not petrolCanState.petrolCan or not petrolCanState.petrolCan.metadata then
+		QBCore.Functions.Notify("Jerry can not equipped!", 'error')
+		return
+	end
+
+	local jerryCanFuel = math.floor(petrolCanState.petrolCan.metadata.ammo or petrolCanState.petrolCan.metadata.durability or 0)
+
+	if jerryCanFuel <= 0 then
+		QBCore.Functions.Notify("Jerry can is empty!", 'error')
+		return
+	end
+
+	-- Calculate max possible refuel amount
+	local maxPossible = math.min(maxRefuel, jerryCanFuel)
+
+	print("^3[cdn-fuel] Vehicle Fuel: "..vehFuel.."% | Jerry Can Fuel: "..jerryCanFuel.."L | Max Refuel: "..maxPossible.."L^7")
+
+	-- Show refuel menu
+	if Config.Ox.Menu then
+		lib.registerContext({
+			id = 'jerrycan_refuel_menu',
+			title = 'Jerry Can Refuel',
+			options = {
+				{
+					title = 'Vehicle Fuel',
+					description = vehFuel..'% / 100%',
+					icon = 'fa-solid fa-car',
+					disabled = true,
+				},
+				{
+					title = 'Jerry Can Fuel',
+					description = jerryCanFuel..'L / 100L',
+					icon = 'fa-solid fa-gas-pump',
+					disabled = true,
+				},
+				{
+					title = 'Max Refuel Amount',
+					description = 'Can add up to '..maxPossible..'L',
+					icon = 'fa-solid fa-fill',
+					disabled = true,
+				},
+				{
+					title = 'Start Refueling',
+					description = 'Refuel vehicle with jerry can',
+					icon = 'fa-solid fa-play',
+					event = 'cdn-fuel:client:startJerryCanRefuel',
+					args = {vehicle = vehicle, maxAmount = maxPossible}
+				},
+				{
+					title = 'Cancel',
+					description = 'Close menu',
+					icon = 'fa-solid fa-xmark',
+					onSelect = function()
+						lib.hideContext()
+					end,
+				},
+			}
+		})
+		lib.showContext('jerrycan_refuel_menu')
+	else
+		-- QB Menu
+		exports['qb-menu']:openMenu({
+			{
+				header = "Jerry Can Refuel",
+				isMenuHeader = true,
+				icon = "fas fa-gas-pump",
+			},
+			{
+				header = "Vehicle Fuel: "..vehFuel.."% / 100%",
+				txt = "Jerry Can Fuel: "..jerryCanFuel.."L / 100L",
+				icon = "fas fa-info-circle",
+				isMenuHeader = true,
+			},
+			{
+				header = "Start Refueling",
+				txt = "Can add up to "..maxPossible.."L",
+				icon = "fas fa-play",
+				params = {
+					event = "cdn-fuel:client:startJerryCanRefuel",
+					args = {vehicle = vehicle, maxAmount = maxPossible}
+				}
+			},
+			{
+				header = "Cancel",
+				icon = "fas fa-times-circle",
+				params = {
+					event = "qb-menu:closeMenu",
+				}
+			},
+		})
+	end
+end)
+
+-- Start the actual refueling process
+RegisterNetEvent('cdn-fuel:client:startJerryCanRefuel', function(data)
+	local vehicle = data.vehicle
+	if vehicle and DoesEntityExist(vehicle) then
+		print("^3[cdn-fuel] Starting refuel process for vehicle: "..vehicle.."^7")
+		StartFuelingWithCan(vehicle)
+	else
+		QBCore.Functions.Notify("Vehicle not found!", 'error')
+	end
+end)
+
+-- Update vehicle fuel from server (for jerry can system)
+RegisterNetEvent('cdn-fuel:client:updateVehicleFuel', function(netid, fuel)
+	local vehicle = NetworkGetEntityFromNetworkId(netid)
+	if vehicle ~= 0 then
+		SetFuel(vehicle, fuel)
+	end
+end)
+
+-- RegisterCommand for fueling (matches ox_fuel)
+RegisterCommand('startfueling', function()
+	if petrolCanState.isFuelingWithCan or IsPedInAnyVehicle(PlayerPedId(), false) or refueling then return end
+
+	local petrolCan = GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_PETROLCAN')
+	local playerCoords = GetEntityCoords(PlayerPedId())
+	local nearestPumpCoords, nearestPump = GetClosestPump(playerCoords, false)
+
+	-- Check if player is in gas station and near a pump
+	if inGasStation and nearestPump and nearestPump ~= 0 and nearestPumpCoords and #(playerCoords - nearestPumpCoords) < 3.0 then
+		-- Player is at a pump
+		if petrolCan and Config.Ox.Inventory then
+			-- Player has jerry can equipped at pump - offer to refill
+			local hasItem = exports.ox_inventory:GetItemCount('WEAPON_PETROLCAN')
+			if hasItem and hasItem > 0 then
+				return GetPetrolCan(nearestPumpCoords, true)
+			end
+		end
+
+		-- Check if there's a vehicle nearby to fuel
+		local vehicle = GetClosestVehicle()
+		if vehicle and vehicle ~= 0 and #(GetEntityCoords(vehicle) - playerCoords) <= 3 then
+			if holdingnozzle then
+				-- Use pump nozzle (existing system)
+				TriggerEvent('cdn-fuel:client:RefuelMenu')
+			end
+		else
+			-- No vehicle nearby - offer to buy jerry can
+			if not petrolCan then
+				return GetPetrolCan(nearestPumpCoords, false)
+			end
+		end
+	elseif petrolCan then
+		-- Player has jerry can equipped, away from pump
+		local vehicle = GetClosestVehicle()
+
+		if vehicle and vehicle ~= 0 then
+			local vehicleCoords = GetEntityCoords(vehicle)
+			local boneIndex = GetEntityBoneIndexByName(vehicle, 'petrolcap')
+
+			if boneIndex == -1 then
+				-- Fallback to boot bone if petrol cap not found
+				boneIndex = GetEntityBoneIndexByName(vehicle, 'boot')
+			end
+
+			local fuelcapPosition = boneIndex ~= -1 and GetWorldPositionOfEntityBone(vehicle, boneIndex) or vehicleCoords
+
+			if #(playerCoords - fuelcapPosition) < 1.8 then
+				return StartFuelingWithCan(vehicle)
+			else
+				return QBCore.Functions.Notify(Lang:t("vehicle_too_far"), 'error')
+			end
+		end
+	end
+end)
+
+RegisterKeyMapping('startfueling', 'Fuel vehicle / Use Jerry Can', 'keyboard', 'e')
+TriggerEvent('chat:removeSuggestion', '/startfueling')
